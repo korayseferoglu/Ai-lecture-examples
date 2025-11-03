@@ -32,21 +32,31 @@ The goal is to predict whether the mass is **malignant** or **benign** based on 
 ---
 
 ## ▶️ Run on Google Colab
-
-If you want to test or experiment quickly, you can run the project entirely in **Google Colab** — no installation required.
-
-**Step 1.** Open a new Colab notebook and copy–paste the following cell:
-
 ```python
-!git clone https://github.com/korayseferoglu/Ai-lecture-examples.git
-%cd Ai-lecture-examples
+from google.colab import files
+uploaded = files.upload()  # Bilgisayarından yükleme penceresi açılacak
+
+import zipfile, os
+zip_name = [k for k in uploaded.keys() if k.endswith('.zip')][0]
+with zipfile.ZipFile(zip_name, 'r') as z:
+    z.extractall('/content')
+!ls -lah /content/project_breast_cancer
+
+%cd /content/project_breast_cancer
 !pip install -q -r requirements.txt
 
-# 1️⃣ Generate EDA figures (saved to reports/figures/)
 !python src/eda.py
 
-# 2️⃣ Train models and save the best one (models/best_model.joblib)
+from IPython.display import Image, display
+from pathlib import Path
+
+for p in sorted(Path('reports/figures').glob('*.png')):
+    display(Image(filename=str(p)))
+
+
 !python src/train.py
 
-# 3️⃣ Example prediction (0 = malignant, 1 = benign)
+import json
+print(json.dumps(json.load(open('reports/metrics.json','r',encoding='utf-8')), indent=2, ensure_ascii=False))
+
 !python src/predict.py --input "mean radius=14.0,mean texture=20.0,mean perimeter=90.0,mean area=600.0,mean smoothness=0.1"
